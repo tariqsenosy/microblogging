@@ -12,22 +12,24 @@ namespace Microblogging.Service.Images
     {
         private readonly IServiceProvider _provider;
         private readonly IConfiguration _config;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public ImageStorageStrategyFactory(IServiceProvider provider, IConfiguration config)
+        public ImageStorageStrategyFactory(IServiceProvider provider, IConfiguration config, IServiceScopeFactory scopeFactory)
         {
             _provider = provider;
             _config = config;
+            _scopeFactory = scopeFactory;
         }
 
         public IImageStorageStrategy GetStrategy()
         {
             var provider = _config.GetValue<string>("Storage:Provider");
 
-            return provider?.ToLower() switch
+            using var scope = _scopeFactory.CreateScope();
+            return provider.ToLower() switch
             {
-               "local" => _provider.GetRequiredService<LocalFileStorageStrategy>(),
-               "azureblob" => _provider.GetRequiredService<AzureBlobStorageStrategy>(),
-               // add more providers
+                "local" => scope.ServiceProvider.GetRequiredService<LocalFileStorageStrategy>(),
+                "azureblob" => scope.ServiceProvider.GetRequiredService<AzureBlobStorageStrategy>(),
                 _ => throw new InvalidOperationException("Unsupported storage provider")
             };
         }

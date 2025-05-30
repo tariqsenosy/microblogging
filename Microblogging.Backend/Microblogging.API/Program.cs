@@ -11,7 +11,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = "wwwroot"
+});
 
 
 
@@ -20,8 +24,8 @@ var builder = WebApplication.CreateBuilder(args);
 // =======================
 builder.Services.AddScoped<IPostService, PostService>();
 
-builder.Services.AddSingleton<AzureBlobStorageStrategy>();
-builder.Services.AddSingleton<LocalFileStorageStrategy>();
+builder.Services.AddScoped<AzureBlobStorageStrategy>();
+builder.Services.AddScoped<LocalFileStorageStrategy>();
 
 builder.Services.AddSingleton<ImageStorageStrategyFactory>();
 builder.Services.AddScoped<IImageStorageStrategy>(sp =>
@@ -128,6 +132,7 @@ builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+
 var app = builder.Build();
 
 // =======================
@@ -153,11 +158,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
-    RequestPath = "/uploads"
-});
+app.UseStaticFiles();
 
 using (var scope = app.Services.CreateScope())
 {
