@@ -2,10 +2,12 @@
 using AspNetCore.Identity.Mongo.Model;
 using Microblogging.API;
 using Microblogging.Repository;
+using Microblogging.Service.Images;
 using Microblogging.Service.Posts;
 using Microblogging.Service.Services.Posts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -17,6 +19,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Service Configuration
 // =======================
 builder.Services.AddScoped<IPostService, PostService>();
+
+builder.Services.AddSingleton<AzureBlobStorageStrategy>();
+builder.Services.AddSingleton<LocalFileStorageStrategy>();
+
+builder.Services.AddSingleton<ImageStorageStrategyFactory>();
+builder.Services.AddScoped<IImageStorageStrategy>(sp =>
+    sp.GetRequiredService<ImageStorageStrategyFactory>().GetStrategy());
+
 
 
 // =======================
@@ -131,11 +141,19 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+
+
+
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // ✅ You missed this!
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+    RequestPath = "/uploads"
+});
 app.Run();

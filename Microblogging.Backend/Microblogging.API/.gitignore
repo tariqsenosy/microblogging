@@ -48,3 +48,6 @@ Thumbs.db
 
 # MongoDB volumes (if mounted)
 mongo-data/
+
+# if any local uploaded
+Uploads/

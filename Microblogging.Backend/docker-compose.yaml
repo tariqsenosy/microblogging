@@ -5,6 +5,8 @@ services:
       dockerfile: Microblogging.API/Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       - mongo
     environment:

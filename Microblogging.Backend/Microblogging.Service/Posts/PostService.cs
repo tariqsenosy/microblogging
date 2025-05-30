@@ -1,6 +1,6 @@
-﻿
-using Microblogging.Domain.Entities;
+﻿using Microblogging.Domain.Entities;
 using Microblogging.Repository;
+using Microblogging.Service.Images;
 using Microblogging.Service.Posts;
 using Microblogging.Service.Posts.DTO;
 using Microblogging.Service.Services.Posts.DTO;
@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Net;
 using AspNetCore.Identity.Mongo.Model;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 
 namespace Microblogging.Service.Services.Posts;
@@ -19,11 +21,15 @@ public class PostService : IPostService
 {
     private readonly IBaseRepository<Post> _postRepository;
     private readonly UserManager<MongoUser> _userManager;
+    private readonly ImageStorageStrategyFactory _storageFactory;
 
-    public PostService(IBaseRepository<Post> postRepository, UserManager<MongoUser> userManager)
+    public PostService(IBaseRepository<Post> postRepository,
+                       UserManager<MongoUser> userManager,
+                       ImageStorageStrategyFactory storageFactory)
     {
         _postRepository = postRepository;
         _userManager = userManager;
+        _storageFactory = storageFactory;
     }
 
     public async Task<FuncResponseWithValue<GetPostResponse>> CreatePostAsync(CreatePostRequest request, string username)
@@ -32,7 +38,7 @@ public class PostService : IPostService
         {
             return new FuncResponseWithValue<GetPostResponse>(
                 null,
-                 HttpStatusCode.BadRequest,
+                HttpStatusCode.BadRequest,
                 ResponseCode.Error,
                 "Text is required and must be 140 characters or less."
             );
@@ -46,14 +52,27 @@ public class PostService : IPostService
             {
                 return new FuncResponseWithValue<GetPostResponse>(
                     null,
-                     HttpStatusCode.BadRequest,
+                    HttpStatusCode.BadRequest,
                     ResponseCode.Error,
                     "Only JPG, PNG, or WebP images are allowed and must be ≤ 2MB."
                 );
             }
 
-            // In a real app this would be uploaded and return a real URL
-            originalImageUrl = $"https://mockstorage.com/uploads/{Guid.NewGuid()}.webp";
+            using var imageStream = request.Image.OpenReadStream();
+            using var image = await Image.LoadAsync(imageStream);
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(1024, 0),
+                Mode = ResizeMode.Max
+            }));
+
+            using var outputStream = new MemoryStream();
+            await image.SaveAsWebpAsync(outputStream);
+            outputStream.Position = 0;
+
+            var storage = _storageFactory.GetStrategy();
+            var fileName = $"{Guid.NewGuid()}.webp";
+            originalImageUrl = await storage.UploadAsync(outputStream, fileName);
         }
 
         var post = new Post
@@ -70,7 +89,7 @@ public class PostService : IPostService
 
         return new FuncResponseWithValue<GetPostResponse>(
             new GetPostResponse(post),
-             HttpStatusCode.Created,
+            HttpStatusCode.Created,
             ResponseCode.Success
         );
     }
@@ -91,9 +110,7 @@ public class PostService : IPostService
                 _ => Builders<Post>.Sort.Descending(p => p.CreatedAt)
             };
 
-            // Use MongoDB.Driver directly
             var collection = _postRepository.Collection;
-
             var totalCount = await collection.CountDocumentsAsync(filter);
             var posts = await collection.Find(filter)
                                         .Sort(sort)
