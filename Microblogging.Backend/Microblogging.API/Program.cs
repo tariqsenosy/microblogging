@@ -2,12 +2,22 @@
 using AspNetCore.Identity.Mongo.Model;
 using Microblogging.API;
 using Microblogging.Repository;
+using Microblogging.Service.Posts;
+using Microblogging.Service.Services.Posts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+// =======================
+// Service Configuration
+// =======================
+builder.Services.AddScoped<IPostService, PostService>();
+
 
 // =======================
 // JWT Configuration

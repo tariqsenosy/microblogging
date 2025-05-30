@@ -8,7 +8,9 @@ using Microblogging.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using System.Net;
+using AspNetCore.Identity.Mongo.Model;
 
 
 namespace Microblogging.Service.Services.Posts;
@@ -16,9 +18,9 @@ namespace Microblogging.Service.Services.Posts;
 public class PostService : IPostService
 {
     private readonly IBaseRepository<Post> _postRepository;
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<MongoUser> _userManager;
 
-    public PostService(IBaseRepository<Post> postRepository, UserManager<User> userManager)
+    public PostService(IBaseRepository<Post> postRepository, UserManager<MongoUser> userManager)
     {
         _postRepository = postRepository;
         _userManager = userManager;
@@ -77,26 +79,33 @@ public class PostService : IPostService
     {
         try
         {
-            var query = _postRepository.Search(x => true);
+            var filter = Builders<Post>.Filter.Empty;
 
-            // Ordering logic (can extend for other fields later)
-            if (orderBy?.ToLower() == "createdat")
-                query = query.OrderByDescending(x => x.CreatedAt);
+            // Apply pagination
+            var skip = ((basePage.Page ?? 1) - 1) * (basePage.PageSize ?? 10);
+            var limit = basePage.PageSize ?? 10;
 
-            var totalCount = await query.CountAsync();
-
-            if (basePage.Page is not null && basePage.PageSize is not null)
+            var sort = orderBy?.ToLower() switch
             {
-                int skip = (basePage.Page.Value - 1) * basePage.PageSize.Value;
-                query = query.Skip(skip).Take(basePage.PageSize.Value);
-            }
+                "createdat" => Builders<Post>.Sort.Descending(p => p.CreatedAt),
+                _ => Builders<Post>.Sort.Descending(p => p.CreatedAt)
+            };
 
-            var data = await query.ToListAsync();
-            var result = data.Select(post => new GetPostResponse(post)).ToList();
+            // Use MongoDB.Driver directly
+            var collection = _postRepository.Collection;
+
+            var totalCount = await collection.CountDocumentsAsync(filter);
+            var posts = await collection.Find(filter)
+                                        .Sort(sort)
+                                        .Skip(skip)
+                                        .Limit(limit)
+                                        .ToListAsync();
+
+            var result = posts.Select(post => new GetPostResponse(post)).ToList();
 
             return new PaginatedOutPut<GetPostResponse>(
                 result,
-                totalCount,
+                (int)totalCount,
                 basePage.Page,
                 basePage.PageSize,
                 ResponseCode.Success,
@@ -105,6 +114,8 @@ public class PostService : IPostService
         }
         catch (Exception ex)
         {
+            Console.WriteLine("Error in GetTimelineAsync: " + ex.Message);
+
             return new PaginatedOutPut<GetPostResponse>(
                 null,
                 0,
@@ -112,7 +123,7 @@ public class PostService : IPostService
                 basePage.PageSize,
                 ResponseCode.Error,
                 HttpStatusCode.InternalServerError
-            ); 
+            );
         }
     }
 

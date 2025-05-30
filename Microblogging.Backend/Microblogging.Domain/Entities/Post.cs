@@ -1,8 +1,13 @@
-﻿namespace Microblogging.Domain.Entities;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace Microblogging.Domain.Entities;
 
 public class Post
 {
-    public int Id { get; set; }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
     public string Text { get; set; } = string.Empty;
     public string? OriginalImageUrl { get; set; }
     public string? ProcessedImageUrl { get; set; }

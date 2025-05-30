@@ -1,10 +1,12 @@
-﻿using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using MongoDB.Driver;
+using System.Linq.Expressions;
 
 namespace Microblogging.Repository;
 
 public interface IBaseRepository<T> where T : class
 {
+    IMongoCollection<T> Collection { get; }
     Task<T?> GetByIdAsync(int id);
     Task<IEnumerable<T?>> GetAllAsync();
     Task<IEnumerable<T?>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includeProperties);

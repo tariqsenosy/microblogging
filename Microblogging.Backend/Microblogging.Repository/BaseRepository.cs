@@ -8,10 +8,13 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
 {
     private readonly IMongoCollection<T> _collection;
 
+
     public BaseRepository(MongoDbContext dbContext)
     {
         _collection = dbContext.GetCollection<T>(typeof(T).Name + "s");
     }
+
+    public IMongoCollection<T> Collection => _collection;
 
     public async Task<T?> GetByIdAsync(int id)
     {
