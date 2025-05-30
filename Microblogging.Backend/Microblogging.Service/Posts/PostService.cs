@@ -1,4 +1,5 @@
-﻿using Microblogging.Domain.Entities;
+﻿using AspNetCore.Identity.Mongo.Model;
+using Microblogging.Domain.Entities;
 using Microblogging.Repository;
 using Microblogging.Service.Images;
 using Microblogging.Service.Posts;
@@ -9,11 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using SixLabors.ImageSharp.Processing.Processors;
 using System.Net;
-using AspNetCore.Identity.Mongo.Model;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-
 
 namespace Microblogging.Service.Services.Posts;
 
@@ -21,15 +19,17 @@ public class PostService : IPostService
 {
     private readonly IBaseRepository<Post> _postRepository;
     private readonly UserManager<MongoUser> _userManager;
-    private readonly ImageStorageStrategyFactory _storageFactory;
+    private readonly IImageProcessorService _imageProcessor;
 
     public PostService(IBaseRepository<Post> postRepository,
                        UserManager<MongoUser> userManager,
-                       ImageStorageStrategyFactory storageFactory)
+                       IImageProcessorService imageProcessor)
     {
         _postRepository = postRepository;
         _userManager = userManager;
-        _storageFactory = storageFactory;
+        _imageProcessor = imageProcessor;
+
+        _imageProcessor.Start();
     }
 
     public async Task<FuncResponseWithValue<GetPostResponse>> CreatePostAsync(CreatePostRequest request, string username)
@@ -44,11 +44,12 @@ public class PostService : IPostService
             );
         }
 
+        Dictionary<string, string>? imageVariants = null;
         string? originalImageUrl = null;
 
         if (request.Image != null)
         {
-            if (!ValidateImage(request.Image))
+            if (!_imageProcessor.ValidateImage(request.Image))
             {
                 return new FuncResponseWithValue<GetPostResponse>(
                     null,
@@ -58,27 +59,18 @@ public class PostService : IPostService
                 );
             }
 
-            using var imageStream = request.Image.OpenReadStream();
-            using var image = await Image.LoadAsync(imageStream);
-            image.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Size = new Size(1024, 0),
-                Mode = ResizeMode.Max
-            }));
-
-            using var outputStream = new MemoryStream();
-            await image.SaveAsWebpAsync(outputStream);
-            outputStream.Position = 0;
-
-            var storage = _storageFactory.GetStrategy();
-            var fileName = $"{Guid.NewGuid()}.webp";
-            originalImageUrl = await storage.UploadAsync(outputStream, fileName);
+            var allVariants = _imageProcessor.QueueImageForMultiSizeProcessing(request.Image);
+            originalImageUrl = allVariants.GetValueOrDefault("original");
+            imageVariants = allVariants
+                .Where(kv => kv.Key != "original")
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         var post = new Post
         {
             Text = request.Text,
             Username = username,
+            ImageVariants = imageVariants,
             OriginalImageUrl = originalImageUrl,
             Latitude = GetRandomLatitude(),
             Longitude = GetRandomLongitude()
@@ -100,7 +92,6 @@ public class PostService : IPostService
         {
             var filter = Builders<Post>.Filter.Empty;
 
-            // Apply pagination
             var skip = ((basePage.Page ?? 1) - 1) * (basePage.PageSize ?? 10);
             var limit = basePage.PageSize ?? 10;
 
@@ -142,12 +133,6 @@ public class PostService : IPostService
                 HttpStatusCode.InternalServerError
             );
         }
-    }
-
-    private bool ValidateImage(IFormFile file)
-    {
-        var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-        return file.Length <= 2 * 1024 * 1024 && allowedContentTypes.Contains(file.ContentType.ToLower());
     }
 
     private double GetRandomLatitude() =>

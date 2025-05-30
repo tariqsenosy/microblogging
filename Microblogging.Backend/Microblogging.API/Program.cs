@@ -5,8 +5,8 @@ using Microblogging.Repository;
 using Microblogging.Service.Images;
 using Microblogging.Service.Posts;
 using Microblogging.Service.Services.Posts;
+using Microblogging.Service.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -26,6 +26,8 @@ builder.Services.AddSingleton<LocalFileStorageStrategy>();
 builder.Services.AddSingleton<ImageStorageStrategyFactory>();
 builder.Services.AddScoped<IImageStorageStrategy>(sp =>
     sp.GetRequiredService<ImageStorageStrategyFactory>().GetStrategy());
+builder.Services.AddSingleton<IImageProcessorService, ImageProcessorService>();
+builder.Services.AddScoped<UsersDatabaseSeeder>();
 
 
 
@@ -156,4 +158,11 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
     RequestPath = "/uploads"
 });
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<UsersDatabaseSeeder>();
+    await seeder.SeedAsync();
+}
+
 app.Run();

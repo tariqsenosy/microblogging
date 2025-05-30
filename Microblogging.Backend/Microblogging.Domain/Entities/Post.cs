@@ -10,7 +10,7 @@ public class Post
     public string? Id { get; set; }
     public string Text { get; set; } = string.Empty;
     public string? OriginalImageUrl { get; set; }
-    public string? ProcessedImageUrl { get; set; }
+    public Dictionary<string, string>? ImageVariants { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

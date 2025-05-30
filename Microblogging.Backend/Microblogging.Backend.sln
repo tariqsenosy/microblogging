@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microblogging.Service", "Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microblogging.Shared", "Microblogging.Shared\Microblogging.Shared.csproj", "{8F82D466-0909-493C-86E1-83E2F2134C84}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microblogging.Tests", "Microblogging.Tests\Microblogging.Tests.csproj", "{0B5454A5-0072-4388-896F-B48ADB8800B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{8F82D466-0909-493C-86E1-83E2F2134C84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F82D466-0909-493C-86E1-83E2F2134C84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F82D466-0909-493C-86E1-83E2F2134C84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B5454A5-0072-4388-896F-B48ADB8800B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B5454A5-0072-4388-896F-B48ADB8800B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B5454A5-0072-4388-896F-B48ADB8800B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B5454A5-0072-4388-896F-B48ADB8800B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
