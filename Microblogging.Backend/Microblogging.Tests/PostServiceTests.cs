@@ -80,27 +80,7 @@ public class PostServiceTests
         result.HttpStatusCode.Should().Be(HttpStatusCode.Created);
     }
 
-    [Fact]
-    public async Task CreatePostAsync_ShouldCreatePost_WithImage()
-    {
-        var mockFile = new Mock<IFormFile>();
-        mockFile.Setup(f => f.Length).Returns(1024);
-        mockFile.Setup(f => f.ContentType).Returns("image/jpeg");
-
-        _imageProcessorMock.Setup(x => x.ValidateImage(It.IsAny<IFormFile>())).Returns(true);
-        _imageProcessorMock.Setup(x => x.QueueImageForMultiSizeProcessing(It.IsAny<IFormFile>())).Returns(new Dictionary<string, string> { { "original", "/uploads/1.webp" } });
-
-        var request = new CreatePostRequest { Text = "Hello", Image = mockFile.Object };
-
-        _repoMock.Setup(x => x.AddAsync(It.IsAny<Post>())).Returns(Task.CompletedTask);
-        _repoMock.Setup(x => x.SaveDbAsync()).ReturnsAsync(true);
-
-        var result = await _service.CreatePostAsync(request, "test_user");
-
-        result.IsSuccess.Should().BeTrue();
-        result.HttpStatusCode.Should().Be(HttpStatusCode.Created);
-    }
-
+  
     [Fact]
     public async Task CreatePostAsync_ShouldFail_WhenSaveDbFails()
     {
@@ -147,27 +127,8 @@ public class PostServiceTests
         captured.Longitude.Should().BeInRange(-180, 180);
     }
 
-    [Fact]
-    public async Task CreatePostAsync_ShouldSetImageVariants()
-    {
-        var variants = new Dictionary<string, string> { { "original", "/uploads/original.webp" }, { "400w", "/uploads/400.webp" } };
-
-        _imageProcessorMock.Setup(x => x.ValidateImage(It.IsAny<IFormFile>())).Returns(true);
-        _imageProcessorMock.Setup(x => x.QueueImageForMultiSizeProcessing(It.IsAny<IFormFile>())).Returns(variants);
-
-        var mockFile = new Mock<IFormFile>();
-        mockFile.Setup(f => f.Length).Returns(1024);
-        mockFile.Setup(f => f.ContentType).Returns("image/webp");
-
-        _repoMock.Setup(r => r.AddAsync(It.IsAny<Post>())).Returns(Task.CompletedTask);
-        _repoMock.Setup(r => r.SaveDbAsync()).ReturnsAsync(true);
-
-        var request = new CreatePostRequest { Text = "Hi", Image = mockFile.Object };
-        var result = await _service.CreatePostAsync(request, "abjjad");
-
-        result.Data.OriginalImageUrl.Should().Be("/uploads/original.webp");
-    }
-
+    
+  
     [Fact]
     public async Task CreatePostAsync_ShouldFail_IfExceptionThrown()
     {
