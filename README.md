@@ -40,7 +40,7 @@ project-root/
 │       └── templates/TimelinePage.tsx
 └── abjaad-microblogging.gif       # Demo animation
 ```
-
+![Microblogging Architecture](./abjaad-microblogging-architecture.gif)
 ---
 
 ##  Why This Tech Stack
@@ -89,6 +89,9 @@ Appends timestamp to image URLs to **prevent browser caching** of resized varian
 
 ###  Responsive Image Delivery
 Uses HTML `<picture>` to load best-fit image based on device size, improving **performance** and **UX**.
+
+---
+![Microblogging Handling-Multiple-Storages](./abjaad-microblogging-strategy.gif)
 
 ---
 
