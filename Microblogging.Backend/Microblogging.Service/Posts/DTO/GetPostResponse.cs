@@ -5,7 +5,7 @@ namespace Microblogging.Service.Services.Posts.DTO;
 
 public class GetPostResponse
 {
-    public string Id { get; set; }
+    
     public string Text { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
@@ -16,7 +16,7 @@ public class GetPostResponse
 
     public GetPostResponse(Post post)
     {
-        Id = post.Id;
+        
         Text = post.Text;
         Username = post.Username;
         CreatedAt = post.CreatedAt;

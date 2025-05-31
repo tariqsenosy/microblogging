@@ -13,7 +13,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
   frontend:
     build:
-      context: ./microblogging-frontend
+      context: ../microblogging.frontend
       args:
         - REACT_APP_API_BASE_URL=http://backend:8080/api
     ports:
