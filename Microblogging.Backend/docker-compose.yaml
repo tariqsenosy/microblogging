@@ -11,6 +11,15 @@ services:
       - mongo
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+  frontend:
+    build:
+      context: ./microblogging-frontend
+      args:
+        - REACT_APP_API_BASE_URL=http://backend:8080/api
+    ports:
+      - "3000:80"
+    depends_on:
+      - microblog-api
 
   mongo:
     image: mongo

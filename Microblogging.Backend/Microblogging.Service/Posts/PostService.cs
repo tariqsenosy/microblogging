@@ -59,11 +59,9 @@ public class PostService : IPostService
                 );
             }
 
-            var allVariants = _imageProcessor.QueueImageForMultiSizeProcessing(request.Image);
-            originalImageUrl = allVariants.GetValueOrDefault("original");
-            imageVariants = allVariants
-                .Where(kv => kv.Key != "original")
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
+            var imageId = Guid.NewGuid().ToString();
+            originalImageUrl = await _imageProcessor.UploadOriginalAndQueueSizesAsync(request.Image, imageId);
+            imageVariants = _imageProcessor.GetPreviewUrls(imageId);
         }
 
         var post = new Post
@@ -140,4 +138,6 @@ public class PostService : IPostService
 
     private double GetRandomLongitude() =>
         new Random().NextDouble() * 360 - 180;
+
+
 }

@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Microblogging.Service.Images;
 
@@ -13,7 +14,9 @@ public class ImageProcessorService : IImageProcessorService
 {
     private readonly ImageStorageStrategyFactory _storageFactory;
     private readonly IWebHostEnvironment _env;
-    private static readonly ConcurrentQueue<(Stream ImageStream, string ImageId)> _queue = new();
+   // private static readonly ConcurrentQueue<(Stream ImageStream, string ImageId)> _queue = new();
+    private static readonly ConcurrentQueue<(byte[] ImageData, string ImageId)> _queue = new();
+
     private static readonly HashSet<string> _processing = new();
     private static readonly int[] Sizes = new[] { 400, 800, 1200 };
 
@@ -29,28 +32,29 @@ public class ImageProcessorService : IImageProcessorService
         return file.Length <= 2 * 1024 * 1024 && allowedTypes.Contains(file.ContentType.ToLower());
     }
 
-    public Dictionary<string, string> QueueImageForMultiSizeProcessing(IFormFile file)
+  
+
+    public async Task<string> UploadOriginalAndQueueSizesAsync(IFormFile file, string imageId)
     {
-        var imageId = Guid.NewGuid().ToString();
+        var strategy = _storageFactory.GetStrategy();
+        var originalPath = $"/uploads/{imageId}-original.webp";
 
-        using var tempStream = new MemoryStream();
-        file.CopyTo(tempStream);
-        var buffer = tempStream.ToArray();
+        using var input = file.OpenReadStream();
+        using var image = Image.Load(input);
 
-        var memoryStream = new MemoryStream(buffer);
-        _queue.Enqueue((memoryStream, imageId));
+        using var ms = new MemoryStream();
+        image.Save(ms, new WebpEncoder());
+        ms.Position = 0;
+        strategy.UploadAsync(ms, $"{imageId}-original.webp").Wait(); // upload immediately
 
-        var result = new Dictionary<string, string>
-        {
-            ["original"] = $"/uploads/{imageId}-original.webp"
-        };
+        // enqueue resized versions
+        using var bufferStream = new MemoryStream();
+        file.CopyTo(bufferStream);
+        var buffer = bufferStream.ToArray();
 
-        foreach (var size in Sizes)
-        {
-            result[$"{size}w"] = $"/uploads/{imageId}-{size}w.webp";
-        }
+        _queue.Enqueue((buffer, imageId)); // enqueue raw image bytes
 
-        return result;
+        return originalPath;
     }
 
 
@@ -70,18 +74,10 @@ public class ImageProcessorService : IImageProcessorService
 
                 try
                 {
-                    
-                    using var originalImage = await Image.LoadAsync(item.ImageStream);
                     var strategy = _storageFactory.GetStrategy();
-                    //save original first 
-                    using (var msOriginal = new MemoryStream())
-                    {
-                        await originalImage.SaveAsync(msOriginal, new WebpEncoder());
-                        msOriginal.Position = 0;
-                        await strategy.UploadAsync(msOriginal, $"{item.ImageId}-original.webp");
-                    }
-
-                    // common sizes 
+                    using var stream = new MemoryStream(item.ImageData);
+                    using var originalImage = await Image.LoadAsync(stream);
+                     
                     foreach (var size in Sizes)
                     {
                         var resized = originalImage.Clone(ctx => ctx.Resize(new ResizeOptions
@@ -111,4 +107,15 @@ public class ImageProcessorService : IImageProcessorService
             await Task.Delay(500);
         }
     }
+
+    public Dictionary<string, string> GetPreviewUrls(string imageId)
+    {
+        return Sizes.ToDictionary(
+            size => $"{size}w",
+            size => $"/uploads/{imageId}-{size}w.webp"
+        );
+    }
+
+
 }
+

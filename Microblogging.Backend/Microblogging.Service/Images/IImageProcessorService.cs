@@ -10,7 +10,8 @@ namespace Microblogging.Service.Images
     public interface IImageProcessorService
     {
         bool ValidateImage(IFormFile file);
-        Dictionary<string, string> QueueImageForMultiSizeProcessing(IFormFile file);
+        Task<string> UploadOriginalAndQueueSizesAsync(IFormFile file, string imageId);
+        Dictionary<string, string> GetPreviewUrls(string imageId);
         void Start(); 
     }
 }
