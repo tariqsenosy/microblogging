@@ -15,9 +15,13 @@ export default function TimelinePage() {
 
   const token = localStorage.getItem('token') || '';
 
-  setTimeout(() => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
       fetchTimeline();
-    }, 1000);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   
 
@@ -68,9 +72,12 @@ const waitForImage = (url: string, onReady: () => void, timeout = 8000) => {
     setTimeout(() => {
       fetchTimeline(true); 
     }, 500);
+
+    
   } catch (error) {
     console.error('Post creation failed:', error);
   }
+
 };
 
 
