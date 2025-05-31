@@ -19,7 +19,6 @@ docker compose up --build
 
 - **Frontend**: [http://localhost:3000](http://localhost:3000)
 - **Backend (Swagger)**: [http://localhost:8080/index.html](http://localhost:8080/index.html)
-- **Image Files**: Served via [http://localhost:8080/uploads/](http://localhost:8080/uploads/...)
 
 ---
 
@@ -45,7 +44,7 @@ project-root/
 
 ##  Why This Tech Stack
 
-### .NET 8 (not .NET 9)
+### .NET 8
 - **Stability & LTS**: .NET 8 is the current **Long-Term Support (LTS)** version, recommended for production systems.
 - **Rich background processing support** using `IHostedService`.
 - Full support for `Minimal APIs`, `File Upload`, and `Dependency Injection` patterns.
