@@ -147,7 +147,15 @@ Uses HTML `<picture>` to load best-fit image based on device size, improving **p
 
 ---
 
-## 🔄 CI/CD
+##  Unit Test
+
+Add Unit test for a saftey network to any new push - the test cases runs as per pipline CICD works 
+
+---
+![Microblogging Unit Test](./abjaad-microblogging-test.gif)
+---
+
+##  CI/CD
 
 CI configured via `azure-pipelines.yml`. Builds the project and runs tests on commit.
 
@@ -170,7 +178,10 @@ These values are injected at build time using Docker ARGs.
 
 - **Integrate Hangfire for Background Tasks**  
   Replace the current manual background image resizing with Hangfire to manage tasks more reliably with retries, monitoring dashboard, and scheduling capabilities.
-
+  
+ **Using ELK**  
+  Adding ELK as docker container to access runtime logs for better monitoring and bugs fix .
+  
 - **Improve Project Design and Architecture**  
   Refactor the current service and controller layers to adopt a more scalable Clean Architecture approach. This includes better separation of business rules, use cases, and interfaces to support larger teams and more features.
 
