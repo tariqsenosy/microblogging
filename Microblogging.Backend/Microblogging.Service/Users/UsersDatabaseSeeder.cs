@@ -27,7 +27,7 @@ namespace Microblogging.Service.Users
                 var user = new MongoUser
                 {
                     UserName = defaultUsername,
-                    Email = "abjjad@example.com", // optional
+                    Email = "abjjad@example.com", 
                     EmailConfirmed = true
                 };
 

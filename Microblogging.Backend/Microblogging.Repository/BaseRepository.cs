@@ -27,13 +27,13 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         await _collection.Find(_ => true).ToListAsync();
 
     public async Task<IEnumerable<T?>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includeProperties)
-        => await GetAllAsync(); // MongoDB doesn't support Include directly
+        => await GetAllAsync(); 
 
     public async Task<IEnumerable<T?>> FindAsync(Expression<Func<T?, bool>> predicate) =>
         await _collection.Find(predicate!).ToListAsync();
 
     public async Task<IEnumerable<T?>> FindIncludingAsync(Expression<Func<T?, bool>> predicate, params Expression<Func<T, object>>[] includeProperties) =>
-        await FindAsync(predicate); // same reason
+        await FindAsync(predicate); 
 
     public async Task AddAsync(T? entity)
     {
@@ -70,7 +70,7 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     public async Task<bool> SaveDbAsync() => await Task.FromResult(true); // not applicable for Mongo
 
     public Task<IClientSessionHandle> BeginTransactionAsync() =>
-        new MongoClient().StartSessionAsync(); // Optional: only if you need transactions
+        new MongoClient().StartSessionAsync(); 
 
     public IQueryable<T> Search(Expression<Func<T, bool>> Condition, string[]? Includes = null, int? PageSize = null, int? PageNumber = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, bool isTrack = true)
     {

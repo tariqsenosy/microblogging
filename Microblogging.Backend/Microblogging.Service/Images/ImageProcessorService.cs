@@ -14,7 +14,6 @@ public class ImageProcessorService : IImageProcessorService
 {
     private readonly ImageStorageStrategyFactory _storageFactory;
     private readonly IWebHostEnvironment _env;
-   // private static readonly ConcurrentQueue<(Stream ImageStream, string ImageId)> _queue = new();
     private static readonly ConcurrentQueue<(byte[] ImageData, string ImageId)> _queue = new();
 
     private static readonly HashSet<string> _processing = new();
@@ -52,7 +51,7 @@ public class ImageProcessorService : IImageProcessorService
         file.CopyTo(bufferStream);
         var buffer = bufferStream.ToArray();
 
-        _queue.Enqueue((buffer, imageId)); // enqueue raw image bytes
+        _queue.Enqueue((buffer, imageId)); 
 
         return originalPath;
     }
