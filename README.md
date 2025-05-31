@@ -161,6 +161,10 @@ CI configured via `azure-pipelines.yml`. Builds the project and runs tests on co
 
 ---
 
+![Microblogging CICD](./abjaad-microblogging-cicd.gif)
+
+---
+
 ##  Environment Variables
 
 Example `.env` for frontend:
