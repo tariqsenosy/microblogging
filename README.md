@@ -56,6 +56,10 @@ project-root/
 - Better control over **state management** and image loading lifecycle.
 - Improved developer experience for frontend-heavy apps via modular components.
 
+### MongoDB (NoSQL)
+Faster to iterate for prototyping and JSON-friendly schema works well with image metadata and post content.
+
+
 ---
 
 ##  Image Upload & Rendering
@@ -126,7 +130,7 @@ Uses HTML `<picture>` to load best-fit image based on device size, improving **p
 - [x] **Prevents flash/missing image issue** via image-ready detection
 - [x] **Post auto-refresh** with delay after image is saved
 - [x] **Authentication via OAuth 2.0 and JWT**
-- [x] **seeder login credintials** for username/password default (abjjad , 123456)
+- [x] **seeder login credintials** for username/password default (Username : abjjad , Password : 123456)
 - [x] **Only logged-in users can post and view timeline**
 - [x] **Backend implemented using .NET 8 (LTS)** and RESTful APIs
 - [x] **Frontend developed as SPA using React (TypeScript)**
@@ -137,6 +141,12 @@ Uses HTML `<picture>` to load best-fit image based on device size, improving **p
 - [x] **Demo animation (.gif)** provided to showcase UX behavior
 - [x] **Unit tests** included for core components
 - [x] **Essential integration tests** written to validate critical paths
+
+---
+
+## 🔄 CI/CD
+
+CI configured via `azure-pipelines.yml`. Builds the project and runs tests on commit.
 
 ---
 
@@ -152,5 +162,28 @@ REACT_APP_BASE_URL=http://localhost:8080
 These values are injected at build time using Docker ARGs.
 
 ---
+
+##  Future Enhancements
+
+- **Integrate Hangfire for Background Tasks**  
+  Replace the current manual background image resizing with Hangfire to manage tasks more reliably with retries, monitoring dashboard, and scheduling capabilities.
+
+- **Improve Project Design and Architecture**  
+  Refactor the current service and controller layers to adopt a more scalable Clean Architecture approach. This includes better separation of business rules, use cases, and interfaces to support larger teams and more features.
+
+- **Implement Role-Based Authorization**  
+  Extend the authentication system to support roles such as `Admin`, `Moderator`, and `User`, allowing fine-grained access control for sensitive operations and admin panels.
+
+- **Scalable Backend Design (Bucket-Based Sharding)**  
+  Enhance the backend to support millions of users by:
+  - Implementing user bucket/sharding logic to distribute load.
+  - Indexing MongoDB collections for optimal read/write performance.
+  - Introducing caching (e.g., Redis) for timeline and frequent reads.
+
+- **User Profile Picture Support**  
+  Allow users to upload and manage profile pictures, which will be displayed next to their posts and on their profile.
+
+- **Add Logout Functionality**  
+  Implement logout logic by invalidating JWT on the client side and adding token expiration awareness for better session control.
 
 
