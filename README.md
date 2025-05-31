@@ -19,7 +19,6 @@ docker compose up --build
 
 - **Frontend**: [http://localhost:3000](http://localhost:3000)
 - **Backend (Swagger)**: [http://localhost:8080/index.html](http://localhost:8080/index.html)
-- **Image Files**: Served via [http://localhost:8080/uploads/](http://localhost:8080/uploads/...)
 
 ---
 
@@ -45,7 +44,7 @@ project-root/
 
 ##  Why This Tech Stack
 
-### .NET 8 (not .NET 9)
+### .NET 8
 - **Stability & LTS**: .NET 8 is the current **Long-Term Support (LTS)** version, recommended for production systems.
 - **Rich background processing support** using `IHostedService`.
 - Full support for `Minimal APIs`, `File Upload`, and `Dependency Injection` patterns.
@@ -161,6 +160,10 @@ CI configured via `azure-pipelines.yml`. Builds the project and runs tests on co
 
 ---
 
+![Microblogging CICD](./abjaad-microblogging-cicd.gif)
+
+---
+
 ##  Environment Variables
 
 Example `.env` for frontend:
@@ -178,8 +181,8 @@ These values are injected at build time using Docker ARGs.
 
 - **Integrate Hangfire for Background Tasks**  
   Replace the current manual background image resizing with Hangfire to manage tasks more reliably with retries, monitoring dashboard, and scheduling capabilities.
-  
- **Using ELK**  
+
+- **Using ELK**  
   Adding ELK as docker container to access runtime logs for better monitoring and bugs fix .
   
 - **Improve Project Design and Architecture**  
