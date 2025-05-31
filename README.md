@@ -182,8 +182,8 @@ These values are injected at build time using Docker ARGs.
 
 - **Integrate Hangfire for Background Tasks**  
   Replace the current manual background image resizing with Hangfire to manage tasks more reliably with retries, monitoring dashboard, and scheduling capabilities.
-  
- **Using ELK**  
+
+  **Using ELK**  
   Adding ELK as docker container to access runtime logs for better monitoring and bugs fix .
   
 - **Improve Project Design and Architecture**  
